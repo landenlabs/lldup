@@ -1,0 +1,17 @@
+ Volume in drive C is OS
+ Volume Serial Number is 7EDF-70C0
+
+ Directory of c:\opt\projects\projects-c++\_ll\lldups\test\test1
+
+04/14/2024  06:19 PM    <DIR>          .
+04/14/2024  05:29 PM    <DIR>          ..
+04/14/2024  05:33 PM    <DIR>          .vs
+04/14/2024  06:19 PM    <DIR>          dir1
+04/14/2024  05:33 PM    <DIR>          lldup
+02/14/2021  08:41 PM             1,429 lldup.sln
+12/18/2021  06:57 PM             8,194 lldup.vcxproj
+03/04/2021  09:49 AM             2,314 lldup.vcxproj.filters
+05/01/2021  05:06 PM               805 lldup.vcxproj.user
+04/14/2024  05:33 PM    <DIR>          x64
+               4 File(s)         12,742 bytes
+               6 Dir(s)  598,924,722,176 bytes free

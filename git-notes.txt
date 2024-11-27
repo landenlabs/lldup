@@ -1,0 +1,21 @@
+git remote add origin https://landenlabs@github.com/landenlabs/lldup
+
+git checkout origin master
+git pull origin master
+git checkout -f master
+
+git add lldup-ms\lldup.sln
+git add lldup-ms\lldup.vcxproj
+
+git status
+git push -u origin master
+
+git commit -m "add ms solution and code fixes for dos/windows"
+git push -u origin master
+git add lldup-ms\Debug\lldup.exe
+git add -f  lldup-ms\Debug\lldup.exe
+git commit -m "add dos executable"
+git push -u origin master
+
+
+
