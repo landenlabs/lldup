@@ -1,96 +1,66 @@
-#lldup
-OSX / Linux / DOS  Json conversion of arrays to transposed columns in CSV format. 
+lldup
+### OSX / Linux / DOS  Find duplicate files and optionally delete or hardlink them.
 
-LLJson parses json files and outputs them as a transposed set of CSV columns. 
+Nov-2024
 
-This input json file:
 
-<pre>
-{
-  "quiz": {
-    "sport": {
-      "q1": {
-        "question": "Which one is correct team name in NBA?",
-        "options": [
-          "New York Bulls",
-          "Los Angeles Kings",
-          "Golden State Warriros",
-          "Huston Rocket"
-        ],
-        "answer": "Huston Rocket"
-      }
-    },
-    "maths": {
-      "q1": {
-        "question": "5 + 7 = ?",
-        "options": [
-          "10",
-          "11",
-          "12",
-          "13"
-        ],
-        "answer": "12"
-      },
-      "q2": {
-        "question": "12 - 8 = ?",
-        "options": [
-          "1",
-          "2",
-          "3",
-          "4"
-        ],
-        "answer": "4"
-      }
-    }
-  }
-}
-</pre>
+### TODO - add notes and examples here
 
-Is converted to CSV columns as:
-<pre>
-quiz.maths.q1.options, quiz.maths.q2.options, quiz.sport.q1.options
-"10", "1", "New York Bulls"
-"11", "2", "Los Angeles Kings"
-"12", "3", "Golden State Warriros"
-</pre>
+### NOTE - hardlink feature not yet implemented  (Nov-2024)
 
+<hr>
 Visit home website
 
 [http://landenlabs.com](http://landenlabs.com)
 
 
+<hr>
 Help Banner:
 <pre>
-lldup  Dennis Lang v1.1 (landenlabs.com) Dec 20 2019
+lldup  Dennis Lang v3.03 (landenlabs.com) Oct  6 2024
 
-Des: Json parse and output as transposed CSV
+Des: Find duplicate files
 Use: lldup [options] directories...   or  files
 
- Options (only first unique characters required, options can be repeated):
-   -includefile=&lt;filePattern>
-   -excludefile=&lt;filePattern>
-   -verbose
+  Options (only first unique characters required, options can be repeated):
 
- Example:
-   lldup -inc=*.json -ex=foo.json -ex=bar.json dir1/subdir dir2 file1.json file2.json
- Example input json:
-   {
-      "cloudCover": [
-        10,
-        30,
-        49
-      ],
-        "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday"
-      ]
-   }
+   -file             ; Find duplicate files by name (default option)
+   Other options available on Windows
 
-   Output transposed CSV
-    cloudCover,  dayOfWeek
-     10, Monday
-     30, Tuesday
-     49, WednesDay
+  Common options:
+   -excludefile=<filePattern> ; File name exclusion patterns
+   -includefile=<filePattern> ; File name inclusion patterns
+   -invert           ; Invert test output.
+   -verbose          ; Show additional info
+   -quiet            ; Only show errors
+
+  With -file
+   -all                ; Match contents on all files, default same name
+   -justName           ; Match duplicate name only, not contents
+   -ignoreExtn         ; With -justName, also ignore extension
+   -preDivider=<text>  ; Pre group divider output before groups
+   -postDivider=<text> ; Post group divider output after groups
+   -separator=<text>   ; Separator
+   -ignoreEmpty        ; Ignore 0 length files
+   -hardlink           ; Hardlink matches
+   -hash               ; Compute xxhash64 on file
+   -md5                ; Compute md5 on file
+   -no                 ; dry run with -hardlink
+
+  With -compareAxx or -duplicateAxx
+   -key=<decrypt_key>
+
+ Examples:
+   Warning - Escape * as in foo.\* or \*.png or ab\*cd.ef?
+
+  Find file matches by name and MD hash value, -inv shows non-matche
+   lldup -file dir1 dir2/subdir dir3
+   lldup -file -inv  dir1 dir2/subdir dir3
+   lldup -file -div=\\n==\\n  -sep=', ' dir1 dir2/subdir dir3
+   lldup -file -just -invert .
+  Delete files from Dir2 which may include special characters:
+   lldup -file -all Dir1 Dir2 | grep Dir2 | tr '\n' '\0' | xargs -t -0 -L1 -S512 -IX rm 'X'
+  Keep first files in group and delete all others:
+   lldup -file -all Dir1 Dir2 | awk '/--/ { num=0;} { if (num++ >1) print;}' | xargs -S512 -L1 -IX rm 'X'
 
 </pre>
