@@ -32,17 +32,18 @@
 
 #pragma once
 
-#include "lstring.hpp"
-// #include <iosfwd>
 
-using namespace std;
 typedef unsigned short  UShort;
 
 #if defined(_WIN32) || defined(_WIN64)
     #define HAVE_WIN
     #define NOMINMAX
-    #define _CRT_SECURE_NO_WARNINGS
+    #define _CRT_SECURE_NO_WARNINGS   // define before all includes
+    typedef unsigned long DWORD;
 #else
     typedef unsigned int  DWORD;
 #endif
 
+#include "lstring.hpp"
+
+using namespace std;

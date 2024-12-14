@@ -79,13 +79,13 @@ void DupScan::getFiles(unsigned level, const StringList& baseDirList, const Stri
     lstring joinBuf;
     for (const lstring& nextDir : nextDirList) {
         for (const lstring& baseDir : baseDirList) {
-            Directory_files directory(Directory_files::join(joinBuf, baseDir, nextDir));
+            Directory_files directory(DirUtil::join(joinBuf, baseDir, nextDir));
 
             while (directory.more()) {
                 if (! directory.is_directory()) {
                     lstring name(directory.name());
                     if (command.validFile(name)) {
-                        outFiles.insert(Directory_files::join(joinBuf, nextDir, name));
+                        outFiles.insert(DirUtil::join(joinBuf, nextDir, name));
                     }
                 }
             }
@@ -98,12 +98,12 @@ void DupScan::getDirs(unsigned level, const StringList& baseDirList, const Strin
     lstring joinBuf;
     for (const lstring& nextDir : nextDirList) {
         for (const lstring& baseDir : baseDirList) {
-            Directory_files directory(Directory_files::join(joinBuf, baseDir, nextDir));
+            Directory_files directory(DirUtil::join(joinBuf, baseDir, nextDir));
             lstring fullname;
 
             while (directory.more()) {
                 if (directory.is_directory()) {
-                    outDirList.insert(Directory_files::join(joinBuf, nextDir, directory.name()));
+                    outDirList.insert(DirUtil::join(joinBuf, nextDir, directory.name()));
                 }
             }
         }
@@ -116,11 +116,11 @@ void DupScan::compareFiles(unsigned level, const StringList& baseDirList, const 
 
     for (const lstring& file : files) {
         StringList::const_iterator dirIter = baseDirList.begin();
-        size_t fileLen1 = fileLength(Directory_files::join(joinBuf1, *dirIter++, file));
+        size_t fileLen1 = fileLength(DirUtil::join(joinBuf1, *dirIter++, file));
         size_t fileLen2 = 0;
         bool matchingLen = true;
         while (dirIter != baseDirList.end()) {
-            fileLen2 = fileLength(Directory_files::join(joinBuf2, *dirIter++, file));
+            fileLen2 = fileLength(DirUtil::join(joinBuf2, *dirIter++, file));
             if (command.justName) {
                 if (fileLen1 == fileLen2)
                     showDuplicate(joinBuf1, joinBuf2);
@@ -140,10 +140,10 @@ void DupScan::compareFiles(unsigned level, const StringList& baseDirList, const 
 
         if (matchingLen) {
             dirIter = baseDirList.begin();
-            Directory_files::join(joinBuf1, *dirIter++, file);
+            DirUtil::join(joinBuf1, *dirIter++, file);
             HashValue hash1 = XXHash64::compute(joinBuf1);  // hashValue = Md5::compute(joinBuf);
             while (dirIter != baseDirList.end()) {
-                Directory_files::join(joinBuf2, *dirIter++, file);
+                DirUtil::join(joinBuf2, *dirIter++, file);
                 HashValue hash2 = XXHash64::compute(joinBuf2); // hashValue = Md5::compute(joinBuf);
                 if (hash1 == hash2) {
                     showDuplicate(joinBuf1, joinBuf2);
