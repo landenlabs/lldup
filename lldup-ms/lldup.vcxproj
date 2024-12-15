@@ -27,16 +27,16 @@
     <ClCompile Include="..\lldup\md5.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\lldup\commands.h" />
-    <ClInclude Include="..\lldup\directory.h" />
-    <ClInclude Include="..\lldup\dupscan.h" />
-    <ClInclude Include="..\lldup\hash.h" />
-    <ClInclude Include="..\lldup\json.h" />
-    <ClInclude Include="..\lldup\ll_stdhdr.h" />
-    <ClInclude Include="..\lldup\lstring.h" />
-    <ClInclude Include="..\lldup\md5.h" />
-    <ClInclude Include="..\lldup\split.h" />
-    <ClInclude Include="..\lldup\SwapStream.h" />
+    <ClInclude Include="..\lldup\colors.hpp" />
+    <ClInclude Include="..\lldup\commands.hpp" />
+    <ClInclude Include="..\lldup\directory.hpp" />
+    <ClInclude Include="..\lldup\dupscan.hpp" />
+    <ClInclude Include="..\lldup\hash.hpp" />
+    <ClInclude Include="..\lldup\ll_stdhdr.hpp" />
+    <ClInclude Include="..\lldup\lstring.hpp" />
+    <ClInclude Include="..\lldup\md5.hpp" />
+    <ClInclude Include="..\lldup\split.hpp" />
+    <ClInclude Include="..\lldup\xxhash64.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
