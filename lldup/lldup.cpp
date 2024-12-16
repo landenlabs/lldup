@@ -38,48 +38,43 @@
 
 // Project files
 #include "ll_stdhdr.hpp"
-#include "directory.hpp"
-#include "split.hpp"
+#include "signals.hpp"
+#include "parseutil.hpp"
 #include "commands.hpp"
+#include "directory.hpp"
 #include "dupscan.hpp"
-#include "colors.hpp"
 
+#include <assert.h>
+#include <iostream>
+#include <exception>
+#if 0
 #include <stdio.h>
 #include <ctype.h>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <iomanip>
-#include <vector>
 #include <map>
 #include <set>
 #include <algorithm>
-#include <regex>
-#include <exception>
+#endif
 
-using namespace std;
+ 
 
 // Helper types
-typedef std::vector<std::regex> PatternList;
 typedef unsigned int uint;
 
-uint optionErrCnt = 0;
-uint patternErrCnt = 0;
+// uint optionErrCnt = 0;
+// uint patternErrCnt = 0;
 
 #if defined(_WIN32) || defined(_WIN64)
-    // const char SLASH_CHAR('\\');
-    #include <assert.h>
     #define strncasecmp _strnicmp
-    #if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
-        #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
-    #endif
 #else
     // const char SLASH_CHAR('/');
 #endif
 
 
 // ---------------------------------------------------------------------------
-// Recurse over directories, locate files.
+// Search directories, locate files.
 static size_t InspectFiles(Command& command, const lstring& dirname) {
     Directory_files directory(dirname);
     lstring fullname;
@@ -96,7 +91,7 @@ static size_t InspectFiles(Command& command, const lstring& dirname) {
         // Probably a pattern, let directory scan do its magic.
     }
 
-    while (directory.more()) {
+    while (!Signals::aborted && directory.more()) {
         directory.fullName(fullname);
         if (directory.is_directory()) {
             fileCount += InspectFiles(command, fullname);
@@ -108,37 +103,10 @@ static size_t InspectFiles(Command& command, const lstring& dirname) {
     return fileCount;
 }
 
-// ---------------------------------------------------------------------------
-// Return compiled regular expression from text.
-std::regex getRegEx(const char* value) {
-    try {
-        std::string valueStr(value);
-        return std::regex(valueStr);
-        // return std::regex(valueStr, regex_constants::icase);
-    } catch (const std::regex_error& regEx) {
-        std::cerr << regEx.what() << ", Pattern=" << value << std::endl;
-    }
 
-    patternErrCnt++;
-    return std::regex("");
-}
 
-// ---------------------------------------------------------------------------
-// Validate option matchs and optionally report problem to user.
-bool ValidOption(const char* validCmd, const char* possibleCmd, bool reportErr = true) {
-    // Starts with validCmd else mark error
-    size_t validLen = strlen(validCmd);
-    size_t possibleLen = strlen(possibleCmd);
 
-    if ( strncasecmp(validCmd, possibleCmd, std::min(validLen, possibleLen)) == 0)
-        return true;
-
-    if (reportErr) {
-        std::cerr << "Unknown option:'" << possibleCmd << "', expect:'" << validCmd << "'\n";
-        optionErrCnt++;
-    }
-    return false;
-}
+#if 0
 // ---------------------------------------------------------------------------
 // Convert special characters from text to binary.
 static std::string& ConvertSpecialChar(std::string& inOut) {
@@ -195,6 +163,7 @@ static std::string& ConvertSpecialChar(std::string& inOut) {
     inOut.resize(len);
     return inOut;;
 }
+#endif
 
 // ---------------------------------------------------------------------------
 void showHelp(const char* arg0) {
@@ -209,8 +178,8 @@ void showHelp(const char* arg0) {
         // "   -file             ; Find duplicate files by name \n"
         "\n"
         //    "   -invert           ; Invert test output "
-        "   -includefile=<filePattern>\n"
-        "   -excludefile=<filePattern>\n"
+        "   -includeFile=<filePattern>\n"
+        "   -excludeFile=<filePattern>\n"
         "   -verbose \n"
         
         "\n"
@@ -250,6 +219,7 @@ void showHelp(const char* arg0) {
     std::cerr << Colors::colorize("\n_W_") << arg0 << Colors::colorize(helpMsg);
 }
 
+#if 0
 //-------------------------------------------------------------------------------------------------
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
 const std::string currentDateTime(time_t& now) {
@@ -261,15 +231,20 @@ const std::string currentDateTime(time_t& now) {
     strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
     return buf;
 }
+#endif
 
 // ---------------------------------------------------------------------------
 int main(int argc, char* argv[]) {
+    Signals::init();
+
+    ParseUtil parser;
     DupFiles dupFiles;
     DupDecode  dupDecode;
     CompareAxxPair compareAxxPair;
 
     Command* commandPtr = &dupFiles;
     StringList fileDirList;
+    lstring timeStr;
 
     if (argc == 1) {
         showHelp(argv[0]);
@@ -284,122 +259,103 @@ int main(int argc, char* argv[]) {
                     lstring cmd = cmdValue[0];
                     lstring value = cmdValue[1];
 
-                    switch (cmd[(unsigned)1]) {
+                    const char* cmdName = cmd + 1;
+                    if (cmd.length() > 2 && *cmdName == '-')
+                        cmdName++;  // allow -- prefix on commands
+                    switch (*cmdName) {
                     case 'e':   // excludeFile=<pat>
-                        if (ValidOption("excludefile", cmd + 1)) {
-                            ReplaceAll(value, "*", ".*");
-                            ReplaceAll(value, "?", ".");
-                            commandPtr->excludeFilePatList.push_back(getRegEx(value));
-                        }
+                        parser.validPattern(commandPtr->excludeFilePatList, value, "excludeFile", cmdName);
                         break;
                     case 'i':   // includeFile=<pat>
-                        if (ValidOption("includefile", cmd + 1)) {
-                            // includeFile=<pat>
-                            ReplaceAll(value, "*", ".*");
-                            ReplaceAll(value, "?", ".");
-                            commandPtr->includeFilePatList.push_back(getRegEx(value));
-                        }
+                        parser.validPattern(commandPtr->includeFilePatList, value, "includeFile", cmdName);
                         break;
                     case 'l':   // log=[1|2]
-                        if (ValidOption("log", cmd + 1)) {
+                        if (parser.validOption("log", cmdName)) {
                             commandPtr->logfile = (unsigned)strtoul(value, nullptr, 10);
-                            continue;
                         }
                         break;
                     case 'p':
-                        if (ValidOption("postDivider", cmd + 1, false)) {
-                            commandPtr->postDivider = ConvertSpecialChar(value);
-                        } else if (ValidOption("preDivider", cmd + 1)) {
-                            commandPtr->preDivider = ConvertSpecialChar(value);
-                        } else if (ValidOption("preDuplicate", cmd + 1)) {
-                            commandPtr->preDup = ConvertSpecialChar(value);
-                        } else if (ValidOption("preDiffer", cmd + 1)) {
-                            commandPtr->preDiff = ConvertSpecialChar(value);
-                        } else if (ValidOption("preMissing", cmd + 1)) {
-                            commandPtr->preMissing = ConvertSpecialChar(value);
+                        if (parser.validOption("postDivider", cmdName, false)) {
+                            commandPtr->postDivider = ParseUtil::convertSpecialChar(value);
+                        } else if (parser.validOption("preDivider", cmdName)) {
+                            commandPtr->preDivider = ParseUtil::convertSpecialChar(value);
+                        } else if (parser.validOption("preDuplicate", cmdName)) {
+                            commandPtr->preDup = ParseUtil::convertSpecialChar(value);
+                        } else if (parser.validOption("preDiffer", cmdName)) {
+                            commandPtr->preDiff = ParseUtil::convertSpecialChar(value);
+                        } else if (parser.validOption("preMissing", cmdName)) {
+                            commandPtr->preMissing = ParseUtil::convertSpecialChar(value);
                         }
                         break;
                     case 's':
-                        if (ValidOption("separator", cmd + 1, false)) {
-                            commandPtr->separator = ConvertSpecialChar(value);
+                        if (parser.validOption("separator", cmdName, false)) {
+                            commandPtr->separator = ParseUtil::convertSpecialChar(value);
                         }
                         break;
 
                     default:
-                        std::cerr << Colors::colorize("Use -h for help.\n_Y_Unknown option _R_") << cmd << Colors::colorize("_X_\n");
-                        optionErrCnt++;
+                        parser.showUnknown(argStr);
                         break;
                     }
                 } else {
-                    switch (argStr[1]) {
+                    const char* cmdName = argStr + 1;
+                    if (argStr.length() > 2 && *cmdName == '-')
+                        cmdName++;  // allow -- prefix on commands
+                    switch (*cmdName) {
                     case 'a':
-                        if (ValidOption("all", argStr + 1)) {
+                        if (parser.validOption("all", cmdName)) {
                             commandPtr->sameName = false;
-                            continue;
                         }
                         break;
                     case 'f': // duplicated files
-                        if (ValidOption("files", argStr + 1)) {
+                        if (parser.validOption("files", cmdName)) {
                             commandPtr = &dupFiles.share(*commandPtr);
-                            continue;
                         }
                         break;
                     case '?':
                         showHelp(argv[0]);
                         continue;
                     case 'h':
-                            if (ValidOption("help", argStr + 1, false)) {
-                                showHelp(argv[0]);
-                                continue;
-                            } else if (ValidOption("hideSame", argStr + 1, false)) {
+                        if (parser.validOption("help", cmdName, false)) {
+                            showHelp(argv[0]);
+                        } else if (parser.validOption("hideSame", cmdName)) {
                             commandPtr->showSame = false;
-                            continue;
                         }
                         break;
                     case 'i':
-                        if (ValidOption("invert", argStr + 1, false)) {
+                        if (parser.validOption("invert", cmdName, false)) {
                             commandPtr->invert = true;
-                            continue;
-                        } else if (ValidOption("ignoreExtn", argStr + 1)) {
+                        } else if (parser.validOption("ignoreExtn", cmdName)) {
                             commandPtr->ignoreExtn = true;
-                            continue;
                         }
                         break;
                     case 'j':
-                        if (ValidOption("justName", argStr + 1)) {
+                        if (parser.validOption("justName", cmdName)) {
                             commandPtr->justName = true;
-                            continue;
                         }
                         break;
                     case 's':
-                        if (ValidOption("showAll", argStr + 1, false)) {
+                        if (parser.validOption("showAll", cmdName, false)) {
                             commandPtr->sameName = false;
-                            continue;
-                        } else if (ValidOption("showDiff", argStr + 1, false)) {
+                        } else if (parser.validOption("showDiff", cmdName, false)) {
                             commandPtr->showDiff = true;
-                            continue;
-                        } else if (ValidOption("showMiss", argStr + 1, false)) {
+                        } else if (parser.validOption("showMiss", cmdName, false)) {
                             commandPtr->showMiss = true;
-                            continue;
-                        }  else if (ValidOption("showSame", argStr + 1, false)) {
+                        }  else if (parser.validOption("showSame", cmdName, false)) {
                             commandPtr->showSame = true;
-                            continue;
-                        }  else if (ValidOption("simple", argStr + 1, false)) {
+                        }  else if (parser.validOption("simple", cmdName)) {
                             commandPtr->preDup = commandPtr->preDiff = "";
                             commandPtr->postDivider = "\n";
-                            continue;
                         }
                         break;
                     case 'v':
                         commandPtr->verbose = true;
-                        continue;
+                    default:
+                        parser.showUnknown(argStr);
                     }
 
                     if (endCmds == argv[argn]) {
                         doParseCmds = false;
-                    } else {
-                        std::cerr << Colors::colorize("Use -h for help.\n_Y_Unknown option _R_") << argStr << Colors::colorize("_X_\n");
-                        optionErrCnt++;
                     }
                 }
             } else {
@@ -409,11 +365,11 @@ int main(int argc, char* argv[]) {
         }
 
         time_t startT;
-        std::cerr << "_Start " << currentDateTime(startT) << std::endl;
+        std::cerr << Colors::colorize("_G_ +Start ") << ParseUtil::fmtDateTime(timeStr, startT) << Colors::colorize("_X_\n");
 
         if (commandPtr->begin(fileDirList)) {
 
-            if (patternErrCnt == 0 && optionErrCnt == 0 && fileDirList.size() != 0) {
+            if (parser.patternErrCnt == 0 && parser.optionErrCnt == 0 && fileDirList.size() != 0) {
                 if (fileDirList.size() == 1 && fileDirList[0] == "-") {
                     string filePath;
                     while (std::getline(std::cin, filePath)) {
@@ -445,8 +401,12 @@ int main(int argc, char* argv[]) {
         }
 
         time_t endT;
-        std::cerr << "_End " << currentDateTime(endT) << std::endl;
-        std::cerr << "_Elapsed " << std::difftime(endT, startT) << " (sec)\n";
+        ParseUtil::fmtDateTime(timeStr, endT);
+        std::cerr << Colors::colorize("_G_ +End ")
+            << timeStr
+            << ", Elapsed "
+            << std::difftime(endT, startT)
+            << Colors::colorize(" (sec)_X_\n");
     }
 
     return 0;

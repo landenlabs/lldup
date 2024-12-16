@@ -33,11 +33,14 @@
     <ClCompile Include="..\lldup\md5.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\lldup\signals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lldup\parseutil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\lldup\colors.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\lldup\commands.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -59,10 +62,13 @@
     <ClInclude Include="..\lldup\md5.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lldup\split.hpp">
+    <ClInclude Include="..\lldup\xxhash64.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\lldup\xxhash64.hpp">
+    <ClInclude Include="..\lldup\signals.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lldup\parseutil.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

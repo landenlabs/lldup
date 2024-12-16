@@ -25,9 +25,10 @@
     <ClCompile Include="..\lldup\hash.cpp" />
     <ClCompile Include="..\lldup\lldup.cpp" />
     <ClCompile Include="..\lldup\md5.cpp" />
+    <ClCompile Include="..\lldup\parseutil.cpp" />
+    <ClCompile Include="..\lldup\signals.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\lldup\colors.hpp" />
     <ClInclude Include="..\lldup\commands.hpp" />
     <ClInclude Include="..\lldup\directory.hpp" />
     <ClInclude Include="..\lldup\dupscan.hpp" />
@@ -35,7 +36,8 @@
     <ClInclude Include="..\lldup\ll_stdhdr.hpp" />
     <ClInclude Include="..\lldup\lstring.hpp" />
     <ClInclude Include="..\lldup\md5.hpp" />
-    <ClInclude Include="..\lldup\split.hpp" />
+    <ClInclude Include="..\lldup\parseutil.hpp" />
+    <ClInclude Include="..\lldup\signals.hpp" />
     <ClInclude Include="..\lldup\xxhash64.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -126,6 +128,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -161,6 +164,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

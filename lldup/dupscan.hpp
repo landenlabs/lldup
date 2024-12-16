@@ -45,12 +45,8 @@
 #pragma once
 
 #include "ll_stdhdr.hpp"
-#ifdef HAVE_WIN
-    #include <windows.h>
-#else
-#endif
-
 #include "commands.hpp"
+
 #include <set>
 typedef set<lstring> StringSet;
 
