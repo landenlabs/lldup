@@ -54,7 +54,7 @@
 
 #ifdef HAVE_WIN
 #define byte win_byte_override  // Fix for c++ v17
-#include <Windows.h>
+#include <windows.h>
 #undef byte                     // Fix for c++ v17
 #else
     typedef unsigned int  DWORD;
