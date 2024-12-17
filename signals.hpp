@@ -1,15 +1,15 @@
 //-------------------------------------------------------------------------------------------------
-// File: signals.cpp
+// File: signals.hpp
 // Author: Dennis Lang
 //
-// Desc: Catch system signals (aka Control-c)
+// Desc: Catch system signals (aka Control-C)
 //
 //-------------------------------------------------------------------------------------------------
 //
 // Author: Dennis Lang - 2024
 // https://landenlabs.com
 //
-// This file is part of llreplace project.
+// This file is part of lldup project.
 //
 // ----- License ----
 //
@@ -32,60 +32,12 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#include "signals.hpp"
-
-#include <iostream>
-
-#ifdef HAVE_WIN
-#include <windows.h>
-#else
-#include <signal.h>
-#endif
-
-
-volatile bool Signals::aborted = false;    // Set true by signal handler
-
-
-#ifdef HAVE_WIN
-//-------------------------------------------------------------------------------------------------
-BOOL WINAPI CtrlHandler(DWORD fdwCtrlType) {
-    switch (fdwCtrlType) {
-    case CTRL_C_EVENT:  // Handle the CTRL-C signal.
-        Signals::aborted = true;
-        std::cerr << "\nCaught signal " << std::endl;
-        Beep(750, 300);
-        return TRUE;
-    }
-
-    return FALSE;
-}
+#include "ll_stdhdr.hpp"
 
 //-------------------------------------------------------------------------------------------------
-void Signals::init() {
-    if (! SetConsoleCtrlHandler(CtrlHandler, TRUE)) {
-        std::cerr << "Failed to install sig handler" << endl;
-    }
-}
+class Signals {
+public:
+    static volatile bool aborted;
 
-#else
-
-//-------------------------------------------------------------------------------------------------
-void sigHandler(int /* sig_t */ s) {
-    Signals::aborted = true;
-    std::cerr << "\nCaught signal " << std::endl;
-}
-
-//-------------------------------------------------------------------------------------------------
-void Signals::init() {
-    // signal(SIGINT, sigHandler);
-
-    struct sigaction sigIntHandler;
-    sigIntHandler.sa_handler = sigHandler;
-    sigemptyset(&sigIntHandler.sa_mask);
-    sigIntHandler.sa_flags = 0;
-    if (sigaction(SIGINT, &sigIntHandler, NULL) != 0) {
-        std::cerr << "Failed to install sig handler" << endl;
-    }
-}
-
-#endif
+    static void init();
+};
