@@ -9,7 +9,7 @@
 // Author: Dennis Lang - 2024
 // https://landenlabs.com
 //
-// This file is part of lldup project.
+// This file is part of lldupdir project.
 //
 // ----- License ----
 //
@@ -38,6 +38,7 @@
 class Signals {
 public:
     static volatile bool aborted;
+    static volatile unsigned int abortCnt;
 
     static void init();
 };
