@@ -89,7 +89,7 @@ public:
     lstring preDivider = "";
     lstring postDivider = "\n__\n";
     
-    lstring preDup = "";
+    lstring preDup = "==";
     lstring preMissing = "-- ";
     lstring preDiff = "!= ";
 

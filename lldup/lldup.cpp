@@ -167,9 +167,10 @@ static std::string& ConvertSpecialChar(std::string& inOut) {
 
 // ---------------------------------------------------------------------------
 void showHelp(const char* arg0) {
-    const char* helpMsg = "  Dennis Lang v1.8 (landenlabs.com) " __DATE__ "\n\n"
+    const char* helpMsg = "  Dennis Lang v2.3 (landenlabs.com) " __DATE__ "\n\n"
         "_p_Des: 'Find duplicate files\n"
         "_p_Use: lldup [options] directories...   or  files\n"
+        "        This program has been replaced with _p_lldupdir \n"
         "\n"
         "_p_Options (only first unique characters required, options can be repeated): \n"
         "\n"
@@ -181,17 +182,19 @@ void showHelp(const char* arg0) {
         "   -includeFile=<filePattern>\n"
         "   -excludeFile=<filePattern>\n"
         "   -verbose \n"
-        
         "\n"
         "_p_Options:\n"
+        "   -_y_showAll           ; Show files that differ\n"
         "   -_y_showDiff           ; Show files that differ\n"
         "   -_y_showMiss           ; Show missing files \n"
-        "   -_y_sameAll            ; Compare all files for matching hash \n"
-        "   -_y_hideSame           ; Don't show duplicate files \n"
+        "   -_y_hideDup            ; Don't show duplicate files \n"
+        "\n"
+        "   -_y_allFiles           ; Compare all files for matching hash \n"
         "   -_y_justName           ; Match duplicate name only, not contents \n"
-        //      "   -ignoreExtn         ; With -justName, also ignore extension \n"
-        "   -_y_preDup=<text>      ; Prefix before duplicates, default nothing  \n"
-        "   -_y_preDiff=<text>     ; Prefix before diffences, default: \"!= \"  \n"
+        "   -_y_ignoreExtn            ; With -justName, also ignore extension \n"
+        "\n"
+        "   -_y_preDup=<text>      ; Prefix before duplicates, default: \"==\"  \n"
+        "   -_y_preDiff=<text>     ; Prefix before differences, default: \"!= \"  \n"
         "   -_y_preMiss=<text>     ; Prefix before missing, default: \"--  \" \n"
         // "   -_y_preDivider=<text>  ; Pre group divider output before groups  \n"
         "   -_y_postDivider=<text> ; Divider for dup and diff, def: \"__\\n\"  \n"
@@ -205,7 +208,7 @@ void showHelp(const char* arg0) {
         "  Find file matches by name and hash value (fastest with only 2 dirs) \n"
         "   lldup  dir1 dir2/subdir  \n"
         "   lldup  -_y_showDiff     dir1 dir2/subdir  \n"
-        "   lldup  -_y_hideSame -_y_showMiss -_y_showDiff dir1 dir2/subdir  \n"
+        "   lldup  -_y_hideDup -_y_showMiss -_y_showDiff dir1 dir2/subdir  \n"
         "  Find file matches by mtching hash value, slower than above, 1 or more dirs \n"
         "   lldup  -_y_showAll  dir1   dir2/subdir   dir3 \n"
         "   lldup  -_y_showAll  dir1 \n"
@@ -303,7 +306,7 @@ int main(int argc, char* argv[]) {
                         cmdName++;  // allow -- prefix on commands
                     switch (*cmdName) {
                     case 'a':
-                        if (parser.validOption("all", cmdName)) {
+                        if (parser.validOption("allFiles", cmdName)) {
                             commandPtr->sameName = false;
                         }
                         break;
@@ -318,7 +321,7 @@ int main(int argc, char* argv[]) {
                     case 'h':
                         if (parser.validOption("help", cmdName, false)) {
                             showHelp(argv[0]);
-                        } else if (parser.validOption("hideSame", cmdName)) {
+                        } else if (parser.validOption("hideDup", cmdName)) {
                             commandPtr->showSame = false;
                         }
                         break;
@@ -336,7 +339,7 @@ int main(int argc, char* argv[]) {
                         break;
                     case 's':
                         if (parser.validOption("showAll", cmdName, false)) {
-                            commandPtr->sameName = false;
+                            commandPtr->showSame = commandPtr->showDiff = commandPtr->showMiss = true ;
                         } else if (parser.validOption("showDiff", cmdName, false)) {
                             commandPtr->showDiff = true;
                         } else if (parser.validOption("showMiss", cmdName, false)) {
