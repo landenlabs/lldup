@@ -58,13 +58,8 @@
 #include <algorithm>
 #endif
 
- 
-
 // Helper types
 typedef unsigned int uint;
-
-// uint optionErrCnt = 0;
-// uint patternErrCnt = 0;
 
 #if defined(_WIN32) || defined(_WIN64)
     #define strncasecmp _strnicmp
@@ -103,71 +98,9 @@ static size_t InspectFiles(Command& command, const lstring& dirname) {
     return fileCount;
 }
 
-
-
-
-#if 0
-// ---------------------------------------------------------------------------
-// Convert special characters from text to binary.
-static std::string& ConvertSpecialChar(std::string& inOut) {
-    uint len = 0;
-    int x, n;
-    const char* inPtr = inOut.c_str();
-    char* outPtr = (char*)inPtr;
-    while (*inPtr) {
-        if (*inPtr == '\\') {
-            inPtr++;
-            switch (*inPtr) {
-            case 'n': *outPtr++ = '\n'; break;
-            case 't': *outPtr++ = '\t'; break;
-            case 'v': *outPtr++ = '\v'; break;
-            case 'b': *outPtr++ = '\b'; break;
-            case 'r': *outPtr++ = '\r'; break;
-            case 'f': *outPtr++ = '\f'; break;
-            case 'a': *outPtr++ = '\a'; break;
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-                sscanf(inPtr, "%3o%n", &x, &n);
-                inPtr += n - 1;
-                *outPtr++ = (char)x;
-                break;
-            case 'x':                                // hexadecimal
-                sscanf(inPtr + 1, "%2x%n", &x, &n);
-                if (n > 0) {
-                    inPtr += n;
-                    *outPtr++ = (char)x;
-                    break;
-                }
-            // seep through
-            default:
-                throw( "Warning: unrecognized escape sequence" );
-            case '\\':
-            case '\?':
-            case '\'':
-            case '\"':
-                *outPtr++ = *inPtr;
-                break;
-            }
-            inPtr++;
-        } else
-            *outPtr++ = *inPtr++;
-        len++;
-    }
-
-    inOut.resize(len);
-    return inOut;;
-}
-#endif
-
 // ---------------------------------------------------------------------------
 void showHelp(const char* arg0) {
-    const char* helpMsg = "  Dennis Lang v2.3 (landenlabs.com) " __DATE__ "\n\n"
+    const char* helpMsg = "  Dennis Lang v3.4 (landenlabs.com) " __DATE__ "\n\n"
         "_p_Des: 'Find duplicate files\n"
         "_p_Use: lldup [options] directories...   or  files\n"
         "        This program has been replaced with _p_lldupdir \n"
@@ -221,20 +154,6 @@ void showHelp(const char* arg0) {
 
     std::cerr << Colors::colorize("\n_W_") << arg0 << Colors::colorize(helpMsg);
 }
-
-#if 0
-//-------------------------------------------------------------------------------------------------
-// Get current date/time, format is YYYY-MM-DD.HH:mm:ss
-const std::string currentDateTime(time_t& now) {
-    now = time(0);
-    struct tm tstruct;
-    char buf[80];
-    tstruct = *localtime(&now);
-    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
-    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
-    return buf;
-}
-#endif
 
 // ---------------------------------------------------------------------------
 int main(int argc, char* argv[]) {
