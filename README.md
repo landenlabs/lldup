@@ -1,12 +1,10 @@
 lldup
 ### OSX / Linux / DOS  Find duplicate files and optionally delete or hardlink them.
 
-Nov-2024
+Dec-2024
+#### Replaced with program lldupdir
 
-
-### TODO - add notes and examples here
-
-### NOTE - hardlink feature not yet implemented  (Nov-2024)
+https://github.com/landenlabs/lldupdir
 
 <hr>
 Visit home website
@@ -15,6 +13,7 @@ Visit home website
 
 
 <hr>
+
 Help Banner:
 <pre>
 lldup  Dennis Lang v3.03 (landenlabs.com) Oct  6 2024
