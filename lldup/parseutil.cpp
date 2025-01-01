@@ -5,12 +5,6 @@
 // Desc: Parsing utility functions.
 //
 //-------------------------------------------------------------------------------------------------
-//
-// Author: Dennis Lang - 2024
-// https://landenlabs.com
-//
-// This file is part of lldupdir project.
-//
 // ----- License ----
 //
 // Copyright (c) 2024  Dennis Lang
@@ -39,12 +33,12 @@
 #include <fstream>
 #include <regex>
 
+
 #ifdef HAVE_WIN
     #define strncasecmp _strnicmp
 #endif
 
 typedef unsigned int uint;
-
 
 // ---------------------------------------------------------------------------
 void ParseUtil::showUnknown(const char* argStr) {
@@ -58,11 +52,11 @@ std::regex ParseUtil::getRegEx(const char* value) {
     try {
         lstring valueStr(value);
         convertSpecialChar(valueStr);
-        // dumpStr("From", valueStr);
-        return std::regex(valueStr);
-        // return std::regex(valueStr, regex_constants::icase);
+        return ignoreCase ? std::regex(valueStr, regex_constants::icase) : std::regex(valueStr);
     } catch (const std::regex_error& regEx) {
         Colors::showError("Invalid regular expression ", regEx.what(), ", Pattern=", value);
+    } catch (...) {
+        Colors::showError("Invalid regular expression=", value);
     }
 
     patternErrCnt++;
@@ -76,8 +70,10 @@ bool ParseUtil::validOption(const char* validCmd, const char* possibleCmd, bool 
     size_t validLen = strlen(validCmd);
     size_t possibleLen = strlen(possibleCmd);
 
-    if (strncasecmp(validCmd, possibleCmd, std::min(validLen, possibleLen)) == 0)
+    if (strncasecmp(validCmd, possibleCmd, std::min(validLen, possibleLen)) == 0) {
+        parseArgSet.insert(validCmd);
         return true;
+    }
 
     if (reportErr) {
         std::cerr << Colors::colorize("_R_Unknown option:'") << possibleCmd << "', expect:'" << validCmd << Colors::colorize("'_X_\n");
@@ -90,10 +86,16 @@ bool ParseUtil::validOption(const char* validCmd, const char* possibleCmd, bool 
 bool ParseUtil::validPattern(PatternList& outList, lstring& value, const char* validCmd, const char* possibleCmd, bool reportErr) {
     bool isOk = validOption(validCmd, possibleCmd, reportErr);
     if (isOk) {
-        ReplaceAll(value, "*", ".*");
-        ReplaceAll(value, "?", ".");
+        if (!unixRegEx) {
+            // Convert simple DOS patterns to regular expression
+            //  .   -> [.]    // match on dot
+            //  *   ->  .*    // zero or more of anything
+            //  ?   ->  .     // single any character
+            ReplaceAll(value, std::regex("([^[])[.]"), "$1[.]");
+            ReplaceAll(value, "*", ".*");
+            ReplaceAll(value, "?", ".");
+        }
         outList.push_back(getRegEx(value));
-        return true;
     }
     return isOk;
 }
@@ -175,8 +177,13 @@ const char* ParseUtil::convertSpecialChar(const char* inPtr) {
                 }
             // seep through
             default:
+                Colors::showError("Warning: unrecognized escape sequence:", inPtr);
                 throw( "Warning: unrecognized escape sequence" );
-            case '\\':
+            case '\0': // Trailing slash
+                inPtr--;
+                break;
+            case '\\':      // Double slash becomes single
+                *outPtr++ = *inPtr;
             case '\?':
             case '\'':
             case '\"':
@@ -256,9 +263,9 @@ lstring& ParseUtil::getParts(
 
 //-------------------------------------------------------------------------------------------------
 #ifdef HAVE_WIN
-#define byte win_byte_override 
+#define byte win_byte_override      // Fix for c++ v17+
 #include <Windows.h>
-#undef byte
+#undef byte                         // Fix for c++ v17+
 #include <stdio.h>
 #endif
 
