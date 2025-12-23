@@ -1,12 +1,12 @@
 @echo off
 
 set prog=lldup
-set devenv=G:\opt\VisualStudio\2022\Preview\Common7\IDE\devenv.exe 
+set devenv=G:\opt\VisualStudio\18\Community\Common7\IDE\devenv.exe 
 
 echo "msbuild=%msbuild%"
 if not exist "%msbuild%" (
 echo Fall back msbuild not found at "%msbuild%"
-set msbuild=G:\opt\VisualStudio\2022\Preview\MSBuild\Current\Bin\MSBuild.exe
+set msbuild=G:\opt\VisualStudio\18\Community\MSBuild\Current\Bin\MSBuild.exe
 )
 echo "Msbuild=%msbuild%"
 
